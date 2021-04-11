@@ -6,5 +6,7 @@ timit_hop_length = 256
 timit_wim_length = 1024
 timit_n_mels = 80
 
+timit_default_duration = 2
+
 # Net1
 net1_train_dataset = "./data/dataset/TIMIT/TRAIN/*/*/*.wav"
