@@ -4,8 +4,11 @@ from torch.nn import Linear, Conv1d, MaxPool1d, Dropout, BatchNorm1d, ReLU, Sigm
 
 
 class PreNet(Module):
-    def __init__(self, in_dims, out_dims_1, out_dims_2, dropout_rate):
+    def __init__(self, in_dims, out_dims_1, out_dims_2=None, dropout_rate=0):
         super(PreNet, self).__init__()
+
+        if out_dims_2 is None:
+            out_dims_2 = out_dims_1 // 2
 
         self.relu = ReLU()
         self.drop = Dropout(dropout_rate)
@@ -150,17 +153,17 @@ class Conv1dBanks(Module):
 
 
 class CBHG(Module):
-    def __init__(self, k, num_highway_blocks, in_dims, out_dims, activation):
+    def __init__(self, num_conv1d_banks, num_highway_blocks, in_dims, out_dims, activation):
         super(CBHG, self).__init__()
 
         self.num_highway_blocks = num_highway_blocks
 
-        self.conv1d_banks = Conv1dBanks(k, in_dims, out_dims, activation)
+        self.conv1d_banks = Conv1dBanks(num_conv1d_banks, in_dims, out_dims, activation)
 
         # Since kernel_size = 2, padding + 1
         self.max_pool1d = MaxPool1d(kernel_size=2, stride=1, padding=1)
 
-        self.projection1 = Conv1dNorm(in_dims=k * out_dims, out_dims=out_dims,
+        self.projection1 = Conv1dNorm(in_dims=num_conv1d_banks * out_dims, out_dims=out_dims,
                                       kernel_size=3, activation_fn=activation)
         self.projection2 = Conv1dNorm(in_dims=out_dims, out_dims=out_dims,
                                       kernel_size=3, activation_fn=None)

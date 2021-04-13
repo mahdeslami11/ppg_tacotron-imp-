@@ -1,3 +1,7 @@
+from audio_operation import phns
+
+phns_len = len(phns)
+
 # TIMIT
 timit_sr = 16000
 timit_n_mfcc = 40
@@ -12,3 +16,5 @@ timit_default_duration = 2
 net1_train_dataset = "./data/dataset/TIMIT/TRAIN/*/*/*.wav"
 net1_train_batch_size = 32
 net1_train_num_workers = 4
+
+net1_train_logits_t = 1.0  # temperature
