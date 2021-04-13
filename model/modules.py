@@ -1,5 +1,5 @@
 import torch
-from torch.nn import Module, GRU
+from torch.nn import Module, ModuleList, GRU
 from torch.nn import Linear, Conv1d, MaxPool1d, Dropout, BatchNorm1d, ReLU, Sigmoid
 
 
@@ -131,19 +131,20 @@ class Conv1dBanks(Module):
     def __init__(self, k, in_dims, out_dims, activation):
         super(Conv1dBanks, self).__init__()
 
-        self.k = k
-        self.in_dims = in_dims
-        self.out_dims = out_dims
-        self.activation = activation
+        convolutions = []
+        for k_size in range(1, k + 1):
+            conv1d_norm = Conv1dNorm(in_dims, out_dims, k_size, activation)
+            convolutions.append(conv1d_norm)
+        self.convolutions = ModuleList(convolutions)
 
     def forward(self, inputs):
         # inputs : (N, in_dims , L_in)
+
         conv1_norm_outputs = []
-        for k_size in range(1, 1 + self.k):
-            conv1d_norm = Conv1dNorm(self.in_dims, self.out_dims, k_size, self.activation)
+        for conv in self.convolutions:
+            conv1d_norm_outputs = conv(inputs)
             # conv1d_norm_outputs : (N, out_dims, L_out)
             # L_in == L_out
-            conv1d_norm_outputs = conv1d_norm(inputs)
             conv1_norm_outputs.append(conv1d_norm_outputs)
 
         # conv1d_banks : (N, k*out_dims, L_out)
@@ -197,6 +198,9 @@ class CBHG(Module):
         # highway_data : (N, L_in, out_dims)
         for i in range(self.num_highway_blocks):
             highway_data = self.highway(highway_data)
+
+        # Set Multi-GPU training mode
+        self.gru.flatten_parameters()
 
         # gru_output : (N, L_in, out_dims*2)
         gru_output, _ = self.gru(highway_data)

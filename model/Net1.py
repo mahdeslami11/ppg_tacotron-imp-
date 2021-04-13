@@ -6,12 +6,12 @@ import hparams
 
 
 class Net1(Module):
-    def __init__(self, in_dims, train1_hidden_units, dropout_rate, num_conv1d_banks, num_highway_blocks):
+    def __init__(self, in_dims, hidden_units, dropout_rate, num_conv1d_banks, num_highway_blocks):
         super().__init__()
 
         # in_dims = n_mfcc, out_dims_1 = 2*out_dims_2 = train1_hidden_units
         self.pre_net = PreNet(in_dims=in_dims,
-                              out_dims_1=train1_hidden_units,
+                              out_dims_1=hidden_units,
                               dropout_rate=dropout_rate)
 
         # num_conv1d_banks = train1_num_conv1d_banks, num_highway_blocks = train1_num_highway_blocks
@@ -19,12 +19,12 @@ class Net1(Module):
         # activation=torch.nn.ReLU()
         self.cbhg = CBHG(num_conv1d_banks=num_conv1d_banks,
                          num_highway_blocks=num_highway_blocks,
-                         in_dims=train1_hidden_units // 2,
-                         out_dims=train1_hidden_units // 2,
+                         in_dims=hidden_units // 2,
+                         out_dims=hidden_units // 2,
                          activation=torch.nn.ReLU())
 
         # in_features = train1_hidden_units, out_features = phns_len
-        self.logits = Linear(in_features=train1_hidden_units, out_features=hparams.phns_len)
+        self.logits = Linear(in_features=hidden_units, out_features=hparams.phns_len)
         self.softmax = Softmax(dim=-1)
 
     def forward(self, inputs):
@@ -47,13 +47,13 @@ class Net1(Module):
         logits_outputs = self.logits(cbhg_outputs)
         # logits_outputs : (N, L_in, phns_len)
 
-        ppgs = self.softmax(logits_outputs / hparams.net1_train_logits_t)
+        ppgs = self.softmax(logits_outputs / hparams.net1_logits_t)
         # ppgs : (N, L_in, phns_len)
 
         preds = torch.argmax(logits_outputs, dim=-1).int()
         # preds = (N, L_in)
 
-        debug = True
+        debug = False
         if debug:
             print("pre_net_outputs : " + str(pre_net_outputs.shape))
             print("cbhg_inputs : " + str(cbhg_inputs.shape))
