@@ -1,5 +1,5 @@
 import torch
-from torch.nn import Module, Linear, Softmax
+from torch.nn import Module, Linear, Softmax, CrossEntropyLoss
 from .modules import PreNet, CBHG
 
 import hparams
@@ -66,3 +66,28 @@ class Net1(Module):
         # preds : (N, L_in)
         # logits_outputs : (N, L_in, phns_len)
         return ppgs, preds, logits_outputs
+
+
+def get_net1_loss(logits, phones, mfccs):
+    is_target = torch.sign(torch.abs(torch.sum(mfccs, -1)))
+
+    compute_loss = CrossEntropyLoss()
+    loss = compute_loss(logits.transpose(1, 2) / hparams.net1_logits_t, phones)
+
+    loss = loss * is_target
+    loss = torch.mean(loss)
+
+    return loss
+
+
+def get_net1_acc(preds, phones, mfccs):
+    is_target = torch.sign(torch.abs(torch.sum(mfccs, -1)))
+
+    hits = torch.eq(preds, phones.int()).float()
+
+    num_hits = torch.sum(hits * is_target)
+    num_targets = torch.sum(is_target)
+
+    acc = num_hits / num_targets
+
+    return acc

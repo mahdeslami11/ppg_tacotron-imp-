@@ -31,6 +31,8 @@ net1_logits_t = 1.0
 # net1 train
 net1_train_device = 'cuda:3' if torch.cuda.is_available() else 'cpu'
 net1_train_steps = 10000
+net1_train_checkpoint_path = "../checkpoint"
 net1_train_lr = 0.0003
-net1_train_log_step = 1
-net1_train_multiple_flag = True
+net1_train_log_step = 10
+net1_train_save_step = 1000
+net1_train_multiple_flag = False
