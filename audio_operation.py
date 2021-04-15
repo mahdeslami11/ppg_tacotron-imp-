@@ -158,7 +158,7 @@ def get_mfccs_and_spectrogram(wav_file, trim=True, random_crop=False):
     length = sr * default_duration
     wav = librosa.util.fix_length(wav, length)
 
-    debug = True
+    debug = False
     if debug:
         print("wav.shape : " + str(wav.shape))
 
