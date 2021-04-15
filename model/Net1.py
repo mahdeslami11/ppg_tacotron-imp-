@@ -9,13 +9,13 @@ class Net1(Module):
     def __init__(self, in_dims, hidden_units, dropout_rate, num_conv1d_banks, num_highway_blocks):
         super().__init__()
 
-        # in_dims = n_mfcc, out_dims_1 = 2*out_dims_2 = train1_hidden_units
+        # in_dims = n_mfcc, out_dims_1 = 2*out_dims_2 = net1_hidden_units
         self.pre_net = PreNet(in_dims=in_dims,
                               out_dims_1=hidden_units,
                               dropout_rate=dropout_rate)
 
-        # num_conv1d_banks = train1_num_conv1d_banks, num_highway_blocks = train1_num_highway_blocks
-        # in_dims = train1_hidden_units // 2, out_dims = train1_hidden_units // 2
+        # num_conv1d_banks = net1_num_conv1d_banks, num_highway_blocks = net1_num_highway_blocks
+        # in_dims = net1_hidden_units // 2, out_dims = net1_hidden_units // 2
         # activation=torch.nn.ReLU()
         self.cbhg = CBHG(num_conv1d_banks=num_conv1d_banks,
                          num_highway_blocks=num_highway_blocks,
@@ -23,7 +23,7 @@ class Net1(Module):
                          out_dims=hidden_units // 2,
                          activation=torch.nn.ReLU())
 
-        # in_features = train1_hidden_units, out_features = phns_len
+        # in_features = net1_hidden_units, out_features = phns_len
         self.logits = Linear(in_features=hidden_units, out_features=hparams.phns_len)
         self.softmax = Softmax(dim=-1)
 
@@ -33,15 +33,15 @@ class Net1(Module):
 
         # PreNet
         pre_net_outputs = self.pre_net(inputs)
-        # pre_net_outputs : (N, L_in, train1_hidden_units // 2)
+        # pre_net_outputs : (N, L_in, net1_hidden_units // 2)
 
-        # change data format
+        # Change data format
         cbhg_inputs = pre_net_outputs.transpose(2, 1)
-        # pre_net_outputs : (N, train1_hidden_units // 2, L_in)
+        # cbhg_inputs : (N, net1_hidden_units // 2, L_in)
 
         # CBHG
         cbhg_outputs = self.cbhg(cbhg_inputs)
-        # cbhg_outputs : (N, L_in, train1_hidden_units)
+        # cbhg_outputs : (N, L_in, net1_hidden_units)
 
         # Final linear projection
         logits_outputs = self.logits(cbhg_outputs)
