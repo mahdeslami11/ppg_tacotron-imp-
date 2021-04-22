@@ -10,6 +10,8 @@ from model.Net1 import Net1
 from model.Net2 import Net2
 from dataloader.Net2DataLoader import get_net2_data_loader
 
+from tensorboardX import SummaryWriter
+
 
 def train(arg):
     device = torch.device(arg.device)
@@ -77,6 +79,9 @@ def train(arg):
         if start_step >= arg.train_steps:
             raise Exception(print(" Training completed !"))
 
+    # Set TensorBoard writer
+    writer = SummaryWriter('loss_log/train2', flush_secs=1)
+
     # Start training
     print("Start training ... ")
     start_time = time.time()
@@ -108,12 +113,14 @@ def train(arg):
 
         # Compute net2
         pred_spec, pred_mel = net2(net2_inputs_ppgs)
+        # pred_spec = net2(net2_inputs_ppgs)
 
         # Compute the loss
         criterion = torch.nn.MSELoss(reduction='mean')
         loss_spec = criterion(pred_spec, spec)
         loss_mel = criterion(pred_mel, mel)
         loss = loss_spec + loss_mel
+        # loss = loss_spec
 
         # Backward and optimize
         net2_optimizer.zero_grad()
@@ -124,8 +131,13 @@ def train(arg):
         if step % arg.log_step == 0:
             et = time.time() - start_time
             et = str(datetime.timedelta(seconds=et))[:-7]
+            writer.add_scalar("net2_loss", loss, global_step=step)
+            writer.add_scalar("net2_spec_loss", loss_spec, global_step=step)
+            # writer.add_scalar("net2_mel_loss", loss_mel, global_step=step)
             log = "Elapsed [{}], Iteration [{}/{}], Loss : [{:.6f}], Loss_spec : [{:.6f}], Loss_mel : [{:.6f}]" \
                 .format(et, step, arg.train_steps, loss, loss_spec, loss_mel)
+            # log = "Elapsed [{}], Iteration [{}/{}], Loss : [{:.6f}], Loss_spec : [{:.6f}]" \
+            #     .format(et, step, arg.train_steps, loss, loss_spec)
             print(log)
 
         # Save model

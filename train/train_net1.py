@@ -9,6 +9,8 @@ import os
 from model.Net1 import Net1, get_net1_loss, get_net1_acc
 from dataloader.Net1DataLoader import get_net1_data_loader
 
+from tensorboardX import SummaryWriter
+
 
 def train(arg):
     device = torch.device(arg.device)
@@ -56,6 +58,9 @@ def train(arg):
         if start_step >= arg.train_steps:
             logger.error(" Training completed !")
             raise Exception(print(" Training completed !"))
+
+    # Set TensorBoard writer
+    writer = SummaryWriter('loss_log/train1', flush_secs=1)
 
     # Start training
     print("Start training ... ")
@@ -107,6 +112,8 @@ def train(arg):
         if step % arg.log_step == 0:
             et = time.time() - start_time
             et = str(datetime.timedelta(seconds=et))[:-7]
+            writer.add_scalar("net1_loss", loss, global_step=step)
+            writer.add_scalar("net1_acc", acc, global_step=step)
             log = "Elapsed [{}], Iteration [{}/{}], Loss : [{:.6f}], Accuracy : [{:.6f}]".format(et, step,
                                                                                                  arg.train_steps, loss,
                                                                                                  acc)
