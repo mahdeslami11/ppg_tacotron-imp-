@@ -2,6 +2,7 @@ import librosa
 import scipy
 import scipy.fftpack
 import numpy as np
+from scipy import signal
 
 import hparams
 
@@ -24,12 +25,69 @@ def read_wav(path, sr, duration=None, mono=True):
     return wav
 
 
+def save_wav(path, wav, sr):
+    librosa.output.write_wav(path=path, y=wav, sr=sr)
+    pass
+
+
 def amp2db(amp):
     return librosa.amplitude_to_db(amp)
 
 
 def db2amp(db):
     return librosa.db_to_amplitude(db)
+
+
+def normalize_0_1(values, max_db, min_db):
+    normalized = np.clip((values - min_db) / (max_db - min_db), 0, 1)
+    return normalized
+
+
+def denormalize_0_1(normalized, max_db, min_db):
+    values = np.clip(normalized, 0, 1) * (max_db - min_db) + min_db
+    return values
+
+
+def preemphasis(wav, coeff=0.97):
+    """
+    Emphasize high frequency range of the waveform by increasing power(squared amplitude).
+
+    Parameters
+    ----------
+    wav : np.ndarray [shape=(n,)]
+        Real-valued the waveform.
+
+    coeff: float <= 1 [scalar]
+        Coefficient of pre-emphasis.
+
+    Returns
+    -------
+    preem_wav : np.ndarray [shape=(n,)]
+        The pre-emphasized waveform.
+    """
+    preem_wav = signal.lfilter([1, -coeff], [1], wav)
+    return preem_wav
+
+
+def inv_preemphasis(preem_wav, coeff=0.97):
+    """
+    Invert the pre-emphasized waveform to the original waveform.
+
+    Parameters
+    ----------
+    preem_wav : np.ndarray [shape=(n,)]
+        The pre-emphasized waveform.
+
+    coeff: float <= 1 [scalar]
+        Coefficient of pre-emphasis.
+
+    Returns
+    -------
+    wav : np.ndarray [shape=(n,)]
+        Real-valued the waveform.
+    """
+    wav = signal.lfilter([1], [1, -coeff], preem_wav)
+    return wav
 
 
 def get_random_crop(length, crop_length):
@@ -40,6 +98,9 @@ def get_random_crop(length, crop_length):
 
 
 def _get_mfcc_and_spec(wav, sr, n_fft, hop_length, win_length, n_mels, n_mfcc):
+    # Pre-emphasis
+    wav = preemphasis(wav, coeff=hparams.timit_preemphasis)
+
     # Get spectrogram
     # (1 + n_fft/2, t)
     spec = librosa.stft(y=wav, n_fft=n_fft, hop_length=hop_length, win_length=win_length)
@@ -57,6 +118,9 @@ def _get_mfcc_and_spec(wav, sr, n_fft, hop_length, win_length, n_mels, n_mfcc):
 
     # Get mfccs
     mfccs = scipy.fftpack.dct(mel_db, axis=0, type=2, norm='ortho')[:n_mfcc]
+
+    mag_db = normalize_0_1(mag_db, hparams.timit_max_db, hparams.timit_min_db)
+    mel_db = normalize_0_1(mel_db, hparams.timit_max_db, hparams.timit_min_db)
 
     debug = False
     if debug:
@@ -76,7 +140,7 @@ def get_mfccs_and_phones(wav_file, trim=False, random_crop=True):
     sr = hparams.timit_sr
     n_fft = hparams.timit_n_fft
     hop_length = hparams.timit_hop_length
-    win_length = hparams.timit_wim_length
+    win_length = hparams.timit_win_length
     n_mels = hparams.timit_n_mels
     n_mfcc = hparams.timit_n_mfcc
     default_duration = hparams.timit_default_duration
@@ -136,7 +200,7 @@ def get_mfccs_and_phones(wav_file, trim=False, random_crop=True):
 def get_mfccs_and_spectrogram(wav_file, trim=True, random_crop=False):
     sr = hparams.timit_sr
     hop_length = hparams.timit_hop_length
-    win_length = hparams.timit_wim_length
+    win_length = hparams.timit_win_length
     n_fft = hparams.timit_n_fft
     n_mels = hparams.timit_n_mels
     n_mfcc = hparams.timit_n_mfcc
@@ -163,3 +227,52 @@ def get_mfccs_and_spectrogram(wav_file, trim=True, random_crop=False):
         print("wav.shape : " + str(wav.shape))
 
     return _get_mfcc_and_spec(wav, sr, n_fft, hop_length, win_length, n_mels, n_mfcc)
+
+
+def spec2wav(mag, n_fft, win_length, hop_length, num_iters, phase=None):
+    """
+        Get a waveform from the magnitude spectrogram by Griffin-Lim Algorithm.
+
+        Parameters
+        ----------
+        mag : np.ndarray [shape=(1 + n_fft/2, t)]
+            Magnitude spectrogram.
+
+        n_fft : int > 0 [scalar]
+            FFT window size.
+
+        win_length  : int <= n_fft [scalar]
+            The window will be of length `win_length` and then padded
+            with zeros to match `n_fft`.
+
+        hop_length : int > 0 [scalar]
+            Number audio of frames between STFT columns.
+
+        num_iters: int > 0 [scalar]
+            Number of iterations of Griffin-Lim Algorithm.
+
+        phase : np.ndarray [shape=(1 + n_fft/2, t)]
+            Initial phase spectrogram.
+
+        Returns
+        -------
+        wav : np.ndarray [shape=(n,)]
+            The real-valued waveform.
+
+        """
+    assert (num_iters > 0)
+    if phase is None:
+        phase = np.pi * np.random.rand(*mag.shape)
+    stft = mag * np.exp(1.j * phase)
+    wav = None
+    for i in range(num_iters):
+        wav = librosa.istft(stft, win_length=win_length, hop_length=hop_length)
+        if i != num_iters - 1:
+            stft = librosa.stft(wav, n_fft=n_fft, win_length=win_length, hop_length=hop_length)
+            _, phase = librosa.magphase(stft)
+            phase = np.angle(phase)
+            a, b = phase.shape
+            # phase = phase.reshape(a, b, 1)
+            phase = phase.reshape(a, b)
+            stft = mag * np.exp(1.j * phase)
+    return wav
