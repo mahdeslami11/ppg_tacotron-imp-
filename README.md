@@ -57,9 +57,9 @@ Net2 contains Net1 as a sub-network.
 ### Procedure
 * Train phase: Net1 and Net2 should be trained sequentially.
   * Train1(training Net1)
-    * Run `train1.py` to train and `eval1.py` to test.
+    * Run `train_net1.py` to train and `test_net1.py` to test.
   * Train2(training Net2)
-    * Run `train2.py` to train and `eval2.py` to test.
+    * Run `train_net2.py` to train and `test_net2.py` to test.
       * Train2 should be trained after Train1 is done!
 * Convert phase: feed forward to Net2
     * Run `convert.py` to get result samples.
