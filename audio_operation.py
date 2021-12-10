@@ -26,7 +26,8 @@ def read_wav(path, sr, duration=None, mono=True):
 
 
 def save_wav(path, wav, sr):
-    librosa.output.write_wav(path=path, y=wav, sr=sr)
+    import soundfile as sf    
+    sf.write(path, wav, sr)
     pass
 
 
