@@ -36,13 +36,13 @@ def convert(x_spec, y_spec, x_mel, y_mel):
     # Spectrogram to waveform
     spec_x_audio = np.array(spec2wav(mag=x_spec.T,
                                      n_fft=hparams.timit_n_fft,
-                                     win_length=hparams.timit_wim_length,
+                                     win_length=hparams.timit_win_length,
                                      hop_length=hparams.timit_hop_length,
                                      num_iters=hparams.convert_num_iters))
 
     spec_y_audio = np.array(spec2wav(mag=y_spec.T,
                                      n_fft=hparams.timit_n_fft,
-                                     win_length=hparams.timit_wim_length,
+                                     win_length=hparams.timit_win_length,
                                      hop_length=hparams.timit_hop_length,
                                      num_iters=hparams.convert_num_iters))
 
