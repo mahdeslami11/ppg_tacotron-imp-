@@ -3,7 +3,7 @@ import argparse
 import torch
 import time
 import datetime
-
+import calc
 import hparams
 
 from model.Net1 import Net1
@@ -35,7 +35,7 @@ def train(arg):
 
     # Create optimizer
     net2_optimizer = torch.optim.Adam(net2.parameters(), lr=arg.learning_rate)
-
+    return net1
     # Move net2 model into the computing device
     net2.to(device)
 
@@ -202,7 +202,7 @@ def get_arguments():
     return arguments
 
 
-if __name__ == '__main__':
+if __name__ == '__main-rep__':
     args = get_arguments()
 
     print("Train Net2 parameters : \n " + str(args))
