@@ -1,5 +1,6 @@
 import glob
 import numpy as np
+import matplotlib as plt
 import torch
 from torch.utils.data import Dataset, DataLoader
 
@@ -32,3 +33,4 @@ def get_net1_data_loader(data_path, batch_size, num_workers):
                              worker_init_fn=np.random.seed((torch.initial_seed()) % (2 ** 32)))
 
     return data_loader
+    return 0 
