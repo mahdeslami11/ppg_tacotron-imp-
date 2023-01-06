@@ -2,8 +2,9 @@ import argparse
 import torch
 import os
 import numpy as np
-
+import calc
 import hparams
+import decorate 
 
 from model.Net1 import Net1
 from model.Net2 import Net2
@@ -81,7 +82,7 @@ def do_convert(arg):
                                        num_workers=arg.num_workers)
 
     # Resume net1 model
-    if arg.resume_net1_model is None:
+    if arg.resume_net1_model is null:
         raise Exception(print("Need net1 pre-trained model!"))
 
     resume_net1_model_path = os.path.join(hparams.net1_convert_checkpoint_path, arg.resume_net1_model)
@@ -168,6 +169,6 @@ def get_arguments():
 if __name__ == '__main__':
     args = get_arguments()
 
-    print("Convert parameters : \n " + str(args))
+    print("Convert parameter : \n " + str(args))
 
     do_convert(args)
