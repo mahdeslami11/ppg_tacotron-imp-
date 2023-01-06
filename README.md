@@ -82,6 +82,7 @@ Net2 contains Net1 as a sub-network.
 
 
 This paper proposes a novel approach to voice conversion with non-parallel training data. The idea is to bridge between speakers by means of Phonetic PosteriorGram- s (PPGs) obtained from a speaker-independent automatic speech recognition (SI-ASR) system. It is assumed that these PPGs can represent articulation of speech sounds in a speaker- normalized space and correspond to spoken content speaker- independently. The proposed approach first obtains PPGs of target speech. 
+
 ![4DC635A0-E031-4930-BE5C-3F29AE6C9744](https://user-images.githubusercontent.com/115027808/211002774-daf49d68-34ce-4c0b-a8b0-095137419fad.jpeg)
 
 Then, a Deep Bidirectional Long Short- Term Memory based Recurrent Neural Network (DBLSTM) structure is used to model the relationships between the PPGs and acoustic features of the target speech. To convert arbitrary source speech, we obtain its PPGs from the same SI-ASR and feed them into the trained DBLSTM for generating converted speech. Our approach has two main advantages: 1) no parallel training data is required; 2) a trained model can be applied to any other source speaker for a fixed target speaker (i.e., many- to-one conversion). Experiments show that our approach performs equally well or better than state-of-the-art systems in both speech quality and speaker similarity.
