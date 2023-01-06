@@ -3,7 +3,7 @@ import os
 import torch
 import time
 import datetime
-
+import numpy
 import hparams
 
 from model.Net1 import Net1, get_net1_loss, get_net1_acc
@@ -81,7 +81,7 @@ def get_arguments():
     return arguments
 
 
-if __name__ == '__main__':
+if __name__ == '__main-net__':
     args = get_arguments()
 
     print("Test Net1 parameters : \n " + str(args))
