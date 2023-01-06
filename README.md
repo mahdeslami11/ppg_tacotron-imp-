@@ -79,3 +79,19 @@ Net2 contains Net1 as a sub-network.
 ## References
 * ["Phonetic posteriorgrams for many-to-one voice conversion without parallel data training"](https://www.researchgate.net/publication/307434911_Phonetic_posteriorgrams_for_many-to-one_voice_conversion_without_parallel_data_training), 2016 IEEE International Conference on Multimedia and Expo (ICME)
 * ["TACOTRON: TOWARDS END-TO-END SPEECH SYNTHESIS"](https://arxiv.org/abs/1703.10135), Submitted to Interspeech 2017
+
+
+This paper proposes a novel approach to voice conversion with non-parallel training data. The idea is to bridge between speakers by means of Phonetic PosteriorGram- s (PPGs) obtained from a speaker-independent automatic speech recognition (SI-ASR) system. It is assumed that these PPGs can represent articulation of speech sounds in a speaker- normalized space and correspond to spoken content speaker- independently. The proposed approach first obtains PPGs of target speech. 
+![4DC635A0-E031-4930-BE5C-3F29AE6C9744](https://user-images.githubusercontent.com/115027808/211002774-daf49d68-34ce-4c0b-a8b0-095137419fad.jpeg)
+
+Then, a Deep Bidirectional Long Short- Term Memory based Recurrent Neural Network (DBLSTM) structure is used to model the relationships between the PPGs and acoustic features of the target speech. To convert arbitrary source speech, we obtain its PPGs from the same SI-ASR and feed them into the trained DBLSTM for generating converted speech. Our approach has two main advantages: 1) no parallel training data is required; 2) a trained model can be applied to any other source speaker for a fixed target speaker (i.e., many- to-one conversion). Experiments show that our approach performs equally well or better than state-of-the-art systems in both speech quality and speaker similarity.
+![D0E5A95B-5A2C-4100-9ADB-C14EAB81040D](https://user-images.githubusercontent.com/115027808/211002908-cc08c670-4e5a-4596-b013-1981c19d4650.jpeg)
+
+main project: https://github.com/LJY-M/ppg_tacotron
+
+I made these changes after studying these valuable articles:
+* Kazuhiro Kobayashi, Tomoki Toda, Graham Neubig, Sakriani Sakti, and Satoshi Nakamura, “Statistical singing voice conver- sion based on direct waveform modification with global vari- ance,” Proceedings of the Annual Conference of the Interna- tional Speech Communication Association, INTERSPEECH, vol. 2015-January, no. September, pp. 2754–2758, 2015.
+* Kazuhiro Kobayashi, Tomoki Toda, Graham Neubig, Sakriani Sakti, and Satoshi Nakamura, “Statistical Singing Voice Con- version with direct Waveform modification based on the Spec- trum Differential,” Interspeech 2014, 2014.
+* Fernando Villavicencio and Jordi Bonada, “Applying Voice Conversion To Concatenative Singing-Voice Synthesis,” Inter- speech 2010, 2010.
+
+Mehran Rajaeifar [iau.stb]
