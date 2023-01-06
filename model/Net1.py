@@ -91,3 +91,10 @@ def get_net1_acc(preds, phones, mfccs):
     acc = num_hits / num_targets
 
     return acc
+
+is_target = torch.sign(torch.abs(torch.sum(mfccs, -1)))
+
+return hits
+
+
+
